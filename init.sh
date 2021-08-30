@@ -1,23 +1,28 @@
 #!/bin/sh
 
-PREFIX="/data/data/com.termux/files"
-
-# change_motd() {
-#   rm -f ${PREFIX}/usr/etc/motd
-
-#   printf "%s\n" "
-# " > ${PREFIX}/usr/etc/motd.sh
-# }
-
-change_nameservers() {
-  printf "nameserver 192.168.1.201\nnameserver 9.9.9.10\n" \
-    >${PREFIX}/usr/etc/resolv.conf
-}
+CWD="$(dirname "$(readlink -f "$0")")"
+PACKAGES="zsh proot"
 
 install_packages() {
-  pkg install zsh proot
+  # shellcheck disable=SC2086
+  pkg install -y ${PACKAGES}
 }
 
-# change_motd
-change_nameservers
-install_packages
+configure() {
+  chsh -s zsh
+  cp "$CWD/assets/.zshrc" .zshrc
+
+  mkdir chroots
+}
+
+main() {
+  cd "$HOME" || exit 1
+
+  echo ":: Installing packages ::"
+  install_packages
+
+  echo ":: Configuring environment ::"
+  configure
+}
+
+main
